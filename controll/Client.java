@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import model.*;
 
+/*
+ * This is a client class that should working together with Spieler object and processing request from Server.
+ * */
+
 public class Client {
 
     static Socket socket;
@@ -14,6 +18,11 @@ public class Client {
     static Scanner sc = new Scanner(System.in);
     static ObjectOutputStream out;
     static ObjectInputStream in;
+
+    /*
+     * Constructor. Creating a new Client with a socket and spielers name.
+     * Also create a new instance of in, out where object should be seen from it.
+     * */
 
     public Client(Socket socket, String name) {
         try {
@@ -26,12 +35,20 @@ public class Client {
         }
     }
 
+    /*
+     * Sending object to server.
+     * */
+
     public void sendObject(Object o) throws IOException {
         if(o != null) {
         	out.writeObject(o);
             out.flush();
         } else { System.err.println("null object"); } 
     }
+
+    /*
+     * Sending a message to server.
+     * */
 
     public void sendMessage() throws IOException {
         while (socket.isConnected()) {
@@ -42,6 +59,9 @@ public class Client {
         closeEverything(socket, in, out);
     }
 
+    /*
+     * Send request to server (as an Object)
+     */
 
     public void sendRequest(Object request) throws IOException {
         try {
@@ -56,6 +76,10 @@ public class Client {
         	System.err.println("Error handling request: " + request.getClass());
         }
     }
+
+    /*
+     * Processing request from server as an String
+     * */
 
     private void handleStringRequest(String action) throws IOException {
         s.setAction(action);
@@ -76,6 +100,10 @@ public class Client {
         }
     }
 
+    /*
+     * Processing request from Server as an Integer
+     * */
+
     private void handleScoreRequest(Integer score) throws IOException {
         s.setAction("submit"); s.setScore(score);
         System.out.println("Sending player: " + s.getName() + ", action: " + s.getAction() + ", score: " + s.getScore());
@@ -83,12 +111,20 @@ public class Client {
         waitForServerResponse();
     }
 
+    /*
+     * Processing request from server as an ArrayList<Karte> (Kartenliste as ArrayList)
+     * */
+
     private void handleCardSelectionRequest(ArrayList<Karte> cards) throws IOException {
         s.setAction("deal");
         System.out.println("Sending player: " + s.getName() + ", action: " + s.getAction() + ", score: " + s.getScore());
         sendObject(s);
         waitForServerResponse();
     }
+
+    /*
+     * After sending request to server, wait for it response. (Multithreading.!)
+     * */
 
     private void waitForServerResponse() {
         synchronized (this) {
@@ -99,6 +135,10 @@ public class Client {
             }
         }
     }
+
+    /*
+     * listen for server message after socket is created. Initialized state after running client.
+     * */
 
     public void listenForMessage() {
         new Thread(() -> {
@@ -131,6 +171,10 @@ public class Client {
         }).start();
     }
 
+    /*
+     * processing Message from Server as an String
+     * */
+
     private void handleStringMessage(String message) {
         System.out.println(message); // Print server's message
         if (message.contains("game has started")) {
@@ -152,6 +196,10 @@ public class Client {
             }
         }
     }
+
+    /*
+     * processing Kartenliste von Server als ArrayList
+     * */
 
     private void handleCardListMessage(ArrayList<?> listFromServer) throws IOException {
         if (!listFromServer.isEmpty() && listFromServer.get(0) instanceof Karte) {
@@ -187,6 +235,10 @@ public class Client {
         }
     }
 
+    /*
+     * Pick a card on hand a send to server.
+     * */
+
     private void handleCardPick(ArrayList<Karte> receivedCards) {
         ArrayList<String> listOfChoice = new ArrayList<>();
         ArrayList<Karte> chosenKarten = new ArrayList<>();
@@ -221,6 +273,10 @@ public class Client {
             e.printStackTrace();
         }
     }
+
+    /*
+     * Closing socket. (For disconnecting, ragequit,....)
+     * */
 
     public void closeEverything(Socket socket, ObjectInputStream in, ObjectOutputStream out) {
         try {

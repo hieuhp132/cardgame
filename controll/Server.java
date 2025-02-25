@@ -2,7 +2,10 @@ package controll;
 
 import java.io.*;
 import java.net.*;
-
+/**
+ * This class is to creating a new Server that should able to listen for new connections of clients (max. 4). 
+ * If a new client was connected, it will create new class named ClientHandler that should holding new client and processes their request.
+ * */
 
 public class Server {
 

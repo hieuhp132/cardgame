@@ -5,6 +5,10 @@ import java.util.*;
 import model.Spiel;
 import model.Spieler;
 
+/**
+ * Main function of this class is to processing client request after connected to server and using game logik
+ * */
+
 public class GameServer {
     private static final int MAX_PLAYERS = 4;
     private static List<ClientHandler> clientHandlers = new ArrayList<>();

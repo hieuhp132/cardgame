@@ -4,6 +4,9 @@ import java.io.*;
 import java.net.*;
 import model.Spieler;
 
+/*
+ * ClientHandler taking request from clients, process it and tell gamelogik with functions should be use to controll the logik after a player from client sending their request.
+ * */
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
@@ -11,6 +14,11 @@ public class ClientHandler implements Runnable {
     private ObjectInputStream in;
     private Spieler spieler;
     private GameServer gameServer;
+
+	
+    /*
+     * Constructor. Creating new ClientHandler mit clientSocket, gameServer, in and out for object exchange.
+     * */
 
     public ClientHandler(Socket clientSocket, GameServer gameServer) throws IOException {
         this.clientSocket = clientSocket;
