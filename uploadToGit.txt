@@ -1,0 +1,1 @@
+git add -A && git commit -m "something" && git push origin main
