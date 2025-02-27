@@ -20,6 +20,7 @@ public class Server {
     public void start() throws IOException {
         try {
             while (!serverSocket.isClosed()) {
+                System.out.println("Waiting for new connections !");
                 Socket socket = serverSocket.accept();
                 System.out.println("A new client has connected");
 
