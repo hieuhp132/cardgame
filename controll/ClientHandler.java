@@ -31,49 +31,53 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             while (true) {
-                Object receivedObject = in.readObject();
+                Object receivedObject = this.in.readObject();
                 if (receivedObject instanceof Spieler) {
                     Spieler spieler = (Spieler) receivedObject;
                     System.out.println("[Client Handler]: Received player: " + spieler.getName() + ", action: " + spieler.getAction() + ", score: " + spieler.getScore());
-                    processClientRequestAsSpieler(spieler);
+                    this.processClientRequestAsSpieler(spieler);
                 } else {
                     System.out.println("[Client Handler]: Unknown message type received: " + receivedObject.getClass());
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
-            disconnectClient();
+            this.disconnectClient();
         }
     }
 
     private void processClientRequestAsSpieler(Spieler spieler) {
         if (spieler != null) {
             
-            this.spieler = spieler;
+            this.spieler = spieler; // Speicher die aktuelle Spieler-Instanz
             String playerAction = this.spieler.getAction();
             System.out.println("[Client Handler]: Received Spieler from client: " + this.spieler.getName() + ". Action: " + playerAction  + ". Score: " + this.spieler.getScore() + " . Status: " + this.spieler.isReady());
-            gameServer.processPlayerAction(spieler, playerAction);
+            this.gameServer.processPlayerAction(this.spieler, playerAction);
         }
     }
 
     public void sendObject(Object o) throws IOException {
-        out.writeObject(o);
-        out.flush();
+        this.out.writeObject(o);
+        this.out.flush();
     }
 
     public Spieler getSpieler() {
-        return spieler;
+        return this.spieler;
+    }
+
+    public void setSpieler(Spieler spieler) {
+    	this.spieler = spieler;
     }
 
     public void disconnectClient() {
-        gameServer.broadcast("[ClientHandler]: " + spieler.getName() + " has left the game.");
-        closeEverything();
+        this.gameServer.broadcast("[ClientHandler]: " + spieler.getName() + " has left the game.");
+        this.closeEverything();
     }
 
     private void closeEverything() {
         try {
-            if (in != null) in.close();
-            if (out != null) out.close();
-            if (clientSocket != null) clientSocket.close();
+            if (this.in != null) this.in.close();
+            if (this.out != null) this.out.close();
+            if (this.clientSocket != null) this.clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

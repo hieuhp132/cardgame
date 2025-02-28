@@ -31,7 +31,7 @@ public class Client {
             this.out = new ObjectOutputStream(socket.getOutputStream());
             this.in = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
-            closeEverything(socket, in, out);
+            this.closeEverything(socket, in, out);
         }
     }
 
@@ -41,8 +41,8 @@ public class Client {
 
     public void sendObject(Object o) throws IOException {
         if(o != null) {
-        	out.writeObject(o);
-            out.flush();
+        	this.out.writeObject(o);
+            	this.out.flush();
         } else { System.err.println("null object"); } 
     }
 
@@ -52,11 +52,11 @@ public class Client {
 
     public void sendMessage() throws IOException {
         while (socket.isConnected()) {
-            String msgToSend = sc.nextLine();
-            s.setAction(msgToSend);
-            sendObject(s);
+            String msgToSend = this.sc.nextLine();
+            this.s.setAction(msgToSend);
+            this.sendObject(s);
         }
-        closeEverything(socket, in, out);
+        this.closeEverything(this.socket, this.in, this.out);
     }
 
     /*
@@ -66,11 +66,11 @@ public class Client {
     public void sendRequest(Object request) throws IOException {
         try {
         	if (request instanceof String) {
-                handleStringRequest((String) request);
+                this.handleStringRequest((String) request);
             } else if (request instanceof Integer) {
-                handleScoreRequest((Integer) request);
+                this.handleScoreRequest((Integer) request);
             } else if (request instanceof ArrayList<?>) {
-                handleCardSelectionRequest((ArrayList<Karte>) request);
+                this.handleCardSelectionRequest((ArrayList<Karte>) request);
             }
         } catch(IOException e) {
         	System.err.println("Error handling request: " + request.getClass());
@@ -82,17 +82,17 @@ public class Client {
      * */
 
     private void handleStringRequest(String action) throws IOException {
-        s.setAction(action);
+        this.s.setAction(action);
         switch (action.toLowerCase()) {
             case "ready":
-                s.setStatus(true);
-                sendObject(s);
-                waitForServerResponse();
+                this.s.setStatus(true);
+                this.sendObject(s);
+                this.waitForServerResponse();
                 break;
             case "leave":
-                sendObject(s);
+                this.sendObject(s);
                 System.out.println("You have left the game.");
-                closeEverything(socket, in, out);
+                this.closeEverything(socket, in, out);
                 System.exit(0);
                 break;
             default:
@@ -105,10 +105,10 @@ public class Client {
      * */
 
     private void handleScoreRequest(Integer score) throws IOException {
-        s.setAction("submit"); s.setScore(score);
+        this.s.setAction("submit"); this.s.setScore(score);
         System.out.println("Sending player: " + s.getName() + ", action: " + s.getAction() + ", score: " + s.getScore());
-        sendObject(s);
-        waitForServerResponse();
+        this.sendObject(s);
+        this.waitForServerResponse();
     }
 
     /*
@@ -116,10 +116,10 @@ public class Client {
      * */
 
     private void handleCardSelectionRequest(ArrayList<Karte> cards) throws IOException {
-        s.setAction("deal");
+        this.s.setAction("deal");
         System.out.println("Sending player: " + s.getName() + ", action: " + s.getAction() + ", score: " + s.getScore());
-        sendObject(s);
-        waitForServerResponse();
+        this.sendObject(s);
+        this.waitForServerResponse();
     }
 
     /*
@@ -144,17 +144,17 @@ public class Client {
         new Thread(() -> {
             Object msgFromServer;
             try {
-                while (socket.isConnected()) {
-                    if (socket.isClosed()) {
+                while (this.socket.isConnected()) {
+                    if (this.socket.isClosed()) {
                         break;
                     }
 
-                    msgFromServer = in.readObject();
+                    msgFromServer = this.in.readObject();
 
                     if (msgFromServer instanceof String) {
-                        handleStringMessage((String) msgFromServer);
+                        this.handleStringMessage((String) msgFromServer);
                     } else if (msgFromServer instanceof ArrayList<?>) {
-                        handleCardListMessage((ArrayList<?>) msgFromServer);
+                        this.handleCardListMessage((ArrayList<?>) msgFromServer);
                     } else {
                         System.out.println("Received unsupported message type: " + msgFromServer.getClass().getName());
                     }
@@ -166,7 +166,7 @@ public class Client {
                 System.err.println("Error reading message: " + e.getMessage());
                 e.printStackTrace();
             } finally {
-                closeEverything(socket, in, out); // Close resources on error
+                this.closeEverything(this.socket,this.in, this.out); // Close resources on error
             }
         }).start();
     }
@@ -186,7 +186,7 @@ public class Client {
         // Check if the message contains "cards"
         if (message.contains("cards")) {
             try {
-                ArrayList<Karte> receivedCards = (ArrayList<Karte>) in.readObject();
+                ArrayList<Karte> receivedCards = (ArrayList<Karte>) this.in.readObject();
                 System.out.println("You have received the following cards:");
                 for (Karte card : receivedCards) {
                     System.out.println(card.str()); // Display each card's string representation
@@ -209,7 +209,7 @@ public class Client {
 
             int index = 0;
             System.out.println("On hand: ");
-            for (Karte card : s.getHands()) {
+            for (Karte card : this.s.getHands()) {
                 System.out.println(index + ": " + card.str());
                 index++;
             }
@@ -220,12 +220,12 @@ public class Client {
                 switch (input.toLowerCase()) {
                     case "submit":
                         
-                        sendRequest(s.getScoreSumme());
+                        this.sendRequest(this.s.getScoreSumme());
                         System.out.println("Score sent!");
                         picked = true;
                         break;
                     case "pick":
-                        handleCardPick(receivedCards);
+                        this.handleCardPick(receivedCards);
                         picked = true;
                         break;
                     default:
@@ -245,7 +245,7 @@ public class Client {
         System.out.println("Enter card indices (or type 'STOP' to end selection):");
 
         while (true) {
-            String input = sc.nextLine().trim();
+            String input = this.sc.nextLine().trim();
             if ("STOP".equalsIgnoreCase(input)) break;
 
             try {
@@ -280,9 +280,9 @@ public class Client {
 
     public void closeEverything(Socket socket, ObjectInputStream in, ObjectOutputStream out) {
         try {
-            if (in != null) in.close();
-            if (out != null) out.close();
-            if (socket != null && !socket.isClosed()) socket.close();
+            if (this.in != null) this.in.close();
+            if (this.out != null) this.out.close();
+            if (this.socket != null && !this.socket.isClosed()) this.socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

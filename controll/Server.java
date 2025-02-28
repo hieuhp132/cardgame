@@ -14,21 +14,21 @@ public class Server {
 
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
-        gameServer = new GameServer();
+       	this. gameServer = new GameServer();
     }
 
     public void start() throws IOException {
         try {
-            while (!serverSocket.isClosed()) {
-                System.out.println("[Server]: Waiting for new connections !");
-                Socket socket = serverSocket.accept();
+            while (!this.serverSocket.isClosed()) {
+                System.out.println("[Server]: Waiting for new connections...");
+                Socket socket = this.serverSocket.accept();
                 System.out.println("[Server]: A new client has connected");
 
-                ClientHandler clientHandler = new ClientHandler(socket, gameServer);
+                ClientHandler clientHandler = new ClientHandler(socket, this.gameServer);
 
-                if (gameServer.addPlayer(clientHandler)) {
+                if (this.gameServer.addPlayer(clientHandler)) {
                     new Thread(clientHandler).start();
-                    gameServer.broadcast("[Server]: A new player has joined. Total players: " + gameServer.getClientHandlers().size());
+                    this.gameServer.broadcast("[Server]: A new player has joined. Total players: " + gameServer.getClientHandlers().size());
                 } else {
                     clientHandler.sendObject("[Server]: Game is full!");
                 }

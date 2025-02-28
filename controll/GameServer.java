@@ -27,7 +27,10 @@ public class GameServer {
     public void processPlayerAction(Spieler player, String action) {
         switch (action.toLowerCase()) {
             case "ready":
-                if (player.isReady()) {
+                
+		System.out.println("[Game Server]: " + player.getName() + " is ready? " + player.isReady());
+
+		if (player.isReady()) {
                     readyPlayers++;
                     if (readyPlayers == MAX_PLAYERS) {
                         startGame();
@@ -36,8 +39,8 @@ public class GameServer {
                 break;
 
             case "submit":
-                int score = player.getScore();
-                System.out.println("[Game Server]: Received score: " + score);
+                updatePlayer(player); // Stelle sicher, dass der Spieler aktualisiert wird.
+                System.out.println("[Game Server]: Received score: " + player.getScore());
                 break;
 
             default:
@@ -59,6 +62,14 @@ public class GameServer {
 
     public static List<ClientHandler> getClientHandlers() {
         return clientHandlers;
+    }
+
+    public void updatePlayer(Spieler updatedPlayer) {
+    	for(ClientHandler client : clientHandlers) {
+		if(client.getSpieler().getName().equals(updatedPlayer.getName())) {
+			client.setSpieler(updatedPlayer);
+		}
+	}
     }
 
     public void broadcast(String message) {
