@@ -39,11 +39,16 @@ public class Client {
      * Sending object to server.
      * */
 
-    public void sendObject(Object o) throws IOException {
-        if(o != null) {
-        	this.out.writeObject(o);
-            	this.out.flush();
-        } else { System.err.println("null object"); } 
+    public void sendObject(Object o) {
+        try{
+		if(o != null) {
+        		this.out.writeObject(o);
+            		this.out.flush();
+			System.out.println("Sent object: " + o);
+        	} else { System.err.println("null object"); } 
+	} catch(IOException e) {
+		System.err.println("Error while trying to send object.");
+	} 
     }
 
     /*
@@ -101,14 +106,14 @@ public class Client {
     }
 
     /*
-     * Processing request from Server as an Integer
+     * Processing request as an Integer, before it need to be seen to server.
      * */
 
     private void handleScoreRequest(Integer score) throws IOException {
         this.s.setAction("submit"); this.s.setScore(score);
         System.out.println("Sending player: " + s.getName() + ", action: " + s.getAction() + ", score: " + s.getScore());
         this.sendObject(s);
-        this.waitForServerResponse();
+        //this.waitForServerResponse();
     }
 
     /*
@@ -220,7 +225,7 @@ public class Client {
                 switch (input.toLowerCase()) {
                     case "submit":
                         
-                        this.sendRequest(this.s.getScoreSumme());
+                        submitScore(); 
                         System.out.println("Score sent!");
                         picked = true;
                         break;
@@ -234,6 +239,17 @@ public class Client {
             }
         }
     }
+
+    /*
+     * Submitting score to server.
+     * */
+
+     public void submitScore() {
+     	this.s.setAction("submit");
+	this.s.setScore(this.s.getScoreSumme());
+	sendObject(this.s);
+	System.out.println("Sending player: " + this.s.getName() + ", action: " + this.s.getAction() + ", score: " + this.s.getScore());
+     } 
 
     /*
      * Pick a card on hand a send to server.
@@ -261,11 +277,15 @@ public class Client {
         }
 
         // Add chosen cards to the chosenKarten list
+	ArrayList<Karte> cardsToRemove = new ArrayList<>();
         for (String str : listOfChoice) {
             Integer i = Integer.parseInt(str);
             chosenKarten.add(receivedCards.get(i));
-            s.getHands().remove(i); // Remove picked cards from the hand
-        }
+            cardsToRemove.add(receivedCards.get(i));  
+            
+	}
+
+	s.getHands().removeAll(cardsToRemove);
 
         try {
             sendRequest(chosenKarten);

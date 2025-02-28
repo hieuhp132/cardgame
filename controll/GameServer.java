@@ -25,7 +25,10 @@ public class GameServer {
     }
 
     public void processPlayerAction(Spieler player, String action) {
-        switch (action.toLowerCase()) {
+	   
+	    System.out.println("[Game Server]: Processing action for player: " + player.getName() + ", Action: " + action);
+    
+	    switch (action.toLowerCase()) {
             case "ready":
                 
 		System.out.println("[Game Server]: " + player.getName() + " is ready? " + player.isReady());
@@ -39,8 +42,8 @@ public class GameServer {
                 break;
 
             case "submit":
-                updatePlayer(player); // Stelle sicher, dass der Spieler aktualisiert wird.
-                System.out.println("[Game Server]: Received score: " + player.getScore());
+		System.out.println("[Game Server]: Player " + player.getName() + " submitted their score" + player.getScore());
+                updatePlayer(player); // Update the player information on the server
                 break;
 
             default:
@@ -67,6 +70,7 @@ public class GameServer {
     public void updatePlayer(Spieler updatedPlayer) {
     	for(ClientHandler client : clientHandlers) {
 		if(client.getSpieler().getName().equals(updatedPlayer.getName())) {
+			System.out.println("[Game Server]: Updating player " + updatedPlayer.getName() + " with new score: " + updatedPlayer.getScore());
 			client.setSpieler(updatedPlayer);
 		}
 	}

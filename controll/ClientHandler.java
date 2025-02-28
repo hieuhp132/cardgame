@@ -34,7 +34,7 @@ public class ClientHandler implements Runnable {
                 Object receivedObject = this.in.readObject();
                 if (receivedObject instanceof Spieler) {
                     Spieler spieler = (Spieler) receivedObject;
-                    System.out.println("[Client Handler]: Received player: " + spieler.getName() + ", action: " + spieler.getAction() + ", score: " + spieler.getScore());
+                    //System.out.println("[Client Handler]: Received player: " + spieler.getName() + ", action: " + spieler.getAction() + ", score: " + spieler.getScore());
                     this.processClientRequestAsSpieler(spieler);
                 } else {
                     System.out.println("[Client Handler]: Unknown message type received: " + receivedObject.getClass());
