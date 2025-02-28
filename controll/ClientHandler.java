@@ -34,10 +34,10 @@ public class ClientHandler implements Runnable {
                 Object receivedObject = in.readObject();
                 if (receivedObject instanceof Spieler) {
                     Spieler spieler = (Spieler) receivedObject;
-                    System.out.println("Received player: " + spieler.getName() + ", action: " + spieler.getAction() + ", score: " + spieler.getScore());
+                    System.out.println("[Client Handler]: Received player: " + spieler.getName() + ", action: " + spieler.getAction() + ", score: " + spieler.getScore());
                     processClientRequestAsSpieler(spieler);
                 } else {
-                    System.out.println("Unknown message type received: " + receivedObject.getClass());
+                    System.out.println("[Client Handler]: Unknown message type received: " + receivedObject.getClass());
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
@@ -50,7 +50,7 @@ public class ClientHandler implements Runnable {
             
             this.spieler = spieler;
             String playerAction = this.spieler.getAction();
-            System.out.println("Received Spieler from client: " + this.spieler.getName() + ". Action: " + playerAction  + ". Score: " + this.spieler.getScore() + " . Status: " + this.spieler.isReady());
+            System.out.println("[Client Handler]: Received Spieler from client: " + this.spieler.getName() + ". Action: " + playerAction  + ". Score: " + this.spieler.getScore() + " . Status: " + this.spieler.isReady());
             gameServer.processPlayerAction(spieler, playerAction);
         }
     }
@@ -65,7 +65,7 @@ public class ClientHandler implements Runnable {
     }
 
     public void disconnectClient() {
-        gameServer.broadcast(spieler.getName() + " has left the game.");
+        gameServer.broadcast("[ClientHandler]: " + spieler.getName() + " has left the game.");
         closeEverything();
     }
 

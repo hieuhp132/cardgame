@@ -37,16 +37,16 @@ public class GameServer {
 
             case "submit":
                 int score = player.getScore();
-                System.out.println("Received score: " + score);
+                System.out.println("[Game Server]: Received score: " + score);
                 break;
 
             default:
-                System.out.println("Invalid action from " + player.getName());
+                System.out.println("[Game Server]: Invalid action from " + player.getName());
         }
     }
 
     private void startGame() {
-        System.out.println("All players are ready. Starting the game....");
+        System.out.println("[Game Server]: All players are ready. Starting the game....");
         // Game start logic, like shuffling cards, etc.
         // For example, we can deal cards here
         Spiel s = new Spiel(clientHandlers);
@@ -75,9 +75,9 @@ public class GameServer {
         for (ClientHandler client : clientHandlers) {
             try {
                 if (client.getSpieler().equals(winner)) {
-                    client.sendObject("You are the winner!!!");
+                    client.sendObject("[Game Server]: You are the winner!!!");
                 } else {
-                    client.sendObject("The winner is " + winner.getName());
+                    client.sendObject("[Game Server]: The winner is " + winner.getName());
                 }
             } catch (IOException e) {
                 e.printStackTrace();

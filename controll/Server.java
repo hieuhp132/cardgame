@@ -20,21 +20,21 @@ public class Server {
     public void start() throws IOException {
         try {
             while (!serverSocket.isClosed()) {
-                System.out.println("Waiting for new connections !");
+                System.out.println("[Server]: Waiting for new connections !");
                 Socket socket = serverSocket.accept();
-                System.out.println("A new client has connected");
+                System.out.println("[Server]: A new client has connected");
 
                 ClientHandler clientHandler = new ClientHandler(socket, gameServer);
 
                 if (gameServer.addPlayer(clientHandler)) {
                     new Thread(clientHandler).start();
-                    gameServer.broadcast("A new player has joined. Total players: " + gameServer.getClientHandlers().size());
+                    gameServer.broadcast("[Server]: A new player has joined. Total players: " + gameServer.getClientHandlers().size());
                 } else {
-                    clientHandler.sendObject("Game is full!");
+                    clientHandler.sendObject("[Server]: Game is full!");
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error accepting client connection: " + e.getMessage());
+            System.err.println("[Server]: Error accepting client connection: " + e.getMessage());
             e.printStackTrace();
         }
     }
