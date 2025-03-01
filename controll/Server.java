@@ -9,12 +9,12 @@ import java.net.*;
 
 public class Server {
 
-    private static ServerSocket serverSocket;
-    private static GameServer gameServer;
+    static private ServerSocket serverSocket;
+    static private GameServer gameServer;
 
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
-       	this. gameServer = new GameServer();
+       	this.gameServer = new GameServer();
     }
 
     public void start() throws IOException {
@@ -31,18 +31,23 @@ public class Server {
                     this.gameServer.broadcast("[Server]: A new player has joined. Total players: " + gameServer.getClientHandlers().size());
                 } else {
                     clientHandler.sendObject("[Server]: Game is full!");
+                    socket.close();
                 }
             }
         } catch (IOException e) {
             System.err.println("[Server]: Error accepting client connection: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         int port = 1239;
-        serverSocket = new ServerSocket(port);
-        Server server = new Server(serverSocket);
-        server.start();
+        try {
+            serverSocket = new ServerSocket(port);
+            Server server = new Server(serverSocket);
+            server.start();
+        } catch(IOException e) {
+            System.err.println("[Server]: Error starting server: " + e.getMessage());
+        }
     }
+
 }

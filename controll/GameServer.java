@@ -11,12 +11,12 @@ import model.Spieler;
 
 public class GameServer {
     private static final int MAX_PLAYERS = 4;
-    private static List<ClientHandler> clientHandlers = new ArrayList<>();
+    private static final List<ClientHandler> clientHandlers = new ArrayList<>();
     private int readyPlayers = 0;
     
     public GameServer() {}
 
-    public boolean addPlayer(ClientHandler clientHandler) {
+    public synchronized boolean addPlayer(ClientHandler clientHandler) {
         if (clientHandlers.size() < MAX_PLAYERS) {
             clientHandlers.add(clientHandler);
             return true;
@@ -24,7 +24,7 @@ public class GameServer {
         return false;  // Game is full
     }
 
-    public void processPlayerAction(Spieler player, String action) {
+    public synchronized void processPlayerAction(Spieler player, String action) {
 	   
 	    System.out.println("[Game Server]: Processing action for player: " + player.getName() + ", Action: " + action);
     
@@ -51,7 +51,7 @@ public class GameServer {
         }
     }
 
-    private void startGame() {
+    private synchronized void startGame() {
         System.out.println("[Game Server]: All players are ready. Starting the game....");
         // Game start logic, like shuffling cards, etc.
         // For example, we can deal cards here
@@ -59,7 +59,7 @@ public class GameServer {
         
     }
 
-    public boolean isFull() {
+    public synchronized boolean isFull() {
         return clientHandlers.size() >= MAX_PLAYERS;
     }
 
@@ -67,7 +67,7 @@ public class GameServer {
         return clientHandlers;
     }
 
-    public void updatePlayer(Spieler updatedPlayer) {
+    public synchronized void updatePlayer(Spieler updatedPlayer) {
     	for(ClientHandler client : clientHandlers) {
 		if(client.getSpieler().getName().equals(updatedPlayer.getName())) {
 			System.out.println("[Game Server]: Updating player " + updatedPlayer.getName() + " with new score: " + updatedPlayer.getScore());

@@ -14,7 +14,7 @@ public class ClientHandler implements Runnable {
     private ObjectInputStream in;
     private Spieler spieler;
     private GameServer gameServer;
-
+    private boolean isRunning = true; // flag to manage thread execution
 	
     /*
      * Constructor. Creating new ClientHandler mit clientSocket, gameServer, in and out for object exchange.
@@ -30,28 +30,28 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            while (true) {
+            while (isRunning) {
                 Object receivedObject = this.in.readObject();
                 if (receivedObject instanceof Spieler) {
-                    Spieler spieler = (Spieler) receivedObject;
-                    //System.out.println("[Client Handler]: Received player: " + spieler.getName() + ", action: " + spieler.getAction() + ", score: " + spieler.getScore());
-                    this.processClientRequestAsSpieler(spieler);
+                    Spieler updatedSpieler = (Spieler) receivedObject;
+                    
+                    // Ensure we track the same player instance
+                    if(this.spieler == null) {
+                        this.spieler = updatedSpieler;
+                    } else {
+                        this.spieler.setAction(updatedSpieler.getAction());
+                        this.spieler.setScore(updatedSpieler.getScore());
+                    }
+
+                    System.out.println("[Client Handler]: Player: " + this.spieler.getName() + ", performed action: " + this.spieler.getAction() + ", score: " + this.spieler.getScore());
+                    //this.processClientRequestAsSpieler(spieler);
+                    gameServer.processPlayerAction(this.spieler, this.spieler.getAction());
                 } else {
                     System.out.println("[Client Handler]: Unknown message type received: " + receivedObject.getClass());
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
             this.disconnectClient();
-        }
-    }
-
-    private void processClientRequestAsSpieler(Spieler spieler) {
-        if (spieler != null) {
-            
-            this.spieler = spieler; // Speicher die aktuelle Spieler-Instanz
-            String playerAction = this.spieler.getAction();
-            System.out.println("[Client Handler]: Received Spieler from client: " + this.spieler.getName() + ". Action: " + playerAction  + ". Score: " + this.spieler.getScore() + " . Status: " + this.spieler.isReady());
-            this.gameServer.processPlayerAction(this.spieler, playerAction);
         }
     }
 
@@ -69,8 +69,13 @@ public class ClientHandler implements Runnable {
     }
 
     public void disconnectClient() {
-        this.gameServer.broadcast("[ClientHandler]: " + spieler.getName() + " has left the game.");
-        this.closeEverything();
+        try {
+            isRunning = false;
+            this.gameServer.broadcast("[ClientHandler]: " + (spieler != null ? spieler.getName() : "Unknown player") + " has left the game.");
+            //this.closeEverything();
+        } catch(IOException e) {
+            System.err.println("[ClientHandler]: Error during disconnect - " + e.getMessage());
+        } 
     }
 
     private void closeEverything() {

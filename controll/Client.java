@@ -13,11 +13,11 @@ import model.*;
 
 public class Client {
 
-    static Socket socket;
-    static public Spieler s;
-    static Scanner sc = new Scanner(System.in);
-    static ObjectOutputStream out;
-    static ObjectInputStream in;
+    Socket socket;
+    Spieler s;
+    Scanner sc = new Scanner(System.in);
+    ObjectOutputStream out;
+    ObjectInputStream in;
 
     /*
      * Constructor. Creating a new Client with a socket and spielers name.
@@ -52,19 +52,6 @@ public class Client {
     }
 
     /*
-     * Sending a message to server.
-     * */
-
-    public void sendMessage() throws IOException {
-        while (socket.isConnected()) {
-            String msgToSend = this.sc.nextLine();
-            this.s.setAction(msgToSend);
-            this.sendObject(s);
-        }
-        this.closeEverything(this.socket, this.in, this.out);
-    }
-
-    /*
      * Send request to server (as an Object)
      */
 
@@ -72,33 +59,31 @@ public class Client {
         try {
         	if (request instanceof String) {
                 this.handleStringRequest((String) request);
-            } else if (request instanceof Integer) {
+            }/* else if (request instanceof Integer) {
                 this.handleScoreRequest((Integer) request);
             } else if (request instanceof ArrayList<?>) {
                 this.handleCardSelectionRequest((ArrayList<Karte>) request);
-            }
+            }*/
         } catch(IOException e) {
         	System.err.println("Error handling request: " + request.getClass());
         }
     }
 
     /*
-     * Processing request from server as an String
+     * Processing request as an String, before sending it to server.
      * */
 
     private void handleStringRequest(String action) throws IOException {
         this.s.setAction(action);
         switch (action.toLowerCase()) {
             case "ready":
-                this.s.setStatus(true);
-                this.sendObject(s);
-                this.waitForServerResponse();
+                readySignal();
                 break;
             case "leave":
-                this.sendObject(s);
-                System.out.println("You have left the game.");
-                this.closeEverything(socket, in, out);
-                System.exit(0);
+                leaveSignal();
+                break;
+            case "submit":
+                submitScore();
                 break;
             default:
                 System.out.println("Invalid action.");
@@ -106,14 +91,38 @@ public class Client {
     }
 
     /*
-     * Processing request as an Integer, before it need to be seen to server.
+     * Sending ready signal to server 
+     * */
+    public void readySignal() {
+        this.s.setStatus(true);
+        this.sendObject(s);
+        this.waitForServerResponse();
+    }
+
+    /*
+     * leaving game.
      * */
 
-    private void handleScoreRequest(Integer score) throws IOException {
-        this.s.setAction("submit"); this.s.setScore(score);
-        System.out.println("Sending player: " + s.getName() + ", action: " + s.getAction() + ", score: " + s.getScore());
-        this.sendObject(s);
-        //this.waitForServerResponse();
+    public void leaveSignal() {
+        //this.sendObject(s);
+        System.out.println("You have left the game.");
+        this.closeEverything(socket, in, out);
+        System.exit(0);
+    }
+
+    /*
+     * sending submit signal to server.
+     * */
+
+    public void submitScore() {
+        this.s.setAction("submit");
+    	this.s.setScore(this.s.getScoreSumme());
+	    sendObject(this.s);
+	    System.out.println("Sending player: " + this.s.getName() + ", action: " + this.s.getAction() + ", score: " + this.s.getScore());
+    }
+
+    public void handleScoreRequest(Integer input) {
+
     }
 
     /*
@@ -187,19 +196,6 @@ public class Client {
                 notify(); // Notify the client that the game has started
             }
         }
-
-        // Check if the message contains "cards"
-        if (message.contains("cards")) {
-            try {
-                ArrayList<Karte> receivedCards = (ArrayList<Karte>) this.in.readObject();
-                System.out.println("You have received the following cards:");
-                for (Karte card : receivedCards) {
-                    System.out.println(card.str()); // Display each card's string representation
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /*
@@ -225,7 +221,8 @@ public class Client {
                 switch (input.toLowerCase()) {
                     case "submit":
                         
-                        submitScore(); 
+                        //submitScore(); 
+                        sendRequest(input);
                         System.out.println("Score sent!");
                         picked = true;
                         break;
@@ -239,17 +236,7 @@ public class Client {
             }
         }
     }
-
-    /*
-     * Submitting score to server.
-     * */
-
-     public void submitScore() {
-     	this.s.setAction("submit");
-	this.s.setScore(this.s.getScoreSumme());
-	sendObject(this.s);
-	System.out.println("Sending player: " + this.s.getName() + ", action: " + this.s.getAction() + ", score: " + this.s.getScore());
-     } 
+ 
 
     /*
      * Pick a card on hand a send to server.
